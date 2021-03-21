@@ -10,11 +10,16 @@ SerialLogHandler logHandler(LOG_LEVEL_TRACE);
 SYSTEM_THREAD(ENABLED);
 
 SequentialFile sequentialFile;
+bool doReset = false;
 
 int testHandler(String cmd);
 
 void setup() {
     Particle.function("test", testHandler);
+
+    // Wait for a USB serial connection for up to 10 seconds
+    waitFor(Serial.isConnected, 10000);
+    delay(1000);
 
     sequentialFile 
         .withDirPath("/usr/seqtest1")
@@ -23,7 +28,11 @@ void setup() {
 }
 
 void loop() {
-
+    if (doReset) {
+        Log.info("resetting...");
+        delay(1000);
+        System.reset();
+    }
 }
 
 
@@ -152,7 +161,7 @@ int testHandler(String param) {
     }
     else 
     if (cmd.equals("reset")) {
-        System.reset();
+        doReset = true;
     }
     else {
         Log.info("unknown command");

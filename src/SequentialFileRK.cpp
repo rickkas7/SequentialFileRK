@@ -36,7 +36,7 @@ bool SequentialFile::scanDir(void) {
         return false;
     }
 
-    String patWithExt = getNameWithOptionalExt(pattern, filenameExtension);
+    _log.trace("scanning %s with pattern %s", dirPath.c_str(), pattern.c_str());
 
     DIR *dir = opendir(dirPath);
     if (!dir) {
@@ -57,17 +57,19 @@ bool SequentialFile::scanDir(void) {
         }
         
         int fileNum;
-        if (sscanf(ent->d_name, patWithExt, &fileNum) == 1) {
-            // 
-            if (preScanAddHook(ent->d_name)) {
-                if (fileNum > lastFileNum) {
-                    lastFileNum = fileNum;
-                }
-                _log.trace("adding to queue %d", fileNum);
+        if (sscanf(ent->d_name, pattern, &fileNum) == 1) {
+            if (filenameExtension.length() == 0 || String(ent->d_name).endsWith(filenameExtension)) {
+                // 
+                if (preScanAddHook(ent->d_name)) {
+                    if (fileNum > lastFileNum) {
+                        lastFileNum = fileNum;
+                    }
+                    _log.trace("adding to queue %d %s", fileNum, ent->d_name);
 
-                queueMutexLock();
-                queue.push_back(fileNum); 
-                queueMutexUnlock();
+                    queueMutexLock();
+                    queue.push_back(fileNum); 
+                    queueMutexUnlock();
+                }
             }
         }
     }
@@ -89,6 +91,9 @@ void SequentialFile::addFileToQueue(int fileNum) {
     if (!scanDirCompleted) {
         scanDir();
     }
+    if (fileNum > lastFileNum) {
+        lastFileNum = fileNum;
+    }
 
     queueMutexLock();
     queue.push_back(fileNum); 
@@ -108,6 +113,8 @@ int SequentialFile::getFileFromQueue(void) {
         queue.pop_front();
     }
     queueMutexUnlock();
+
+    _log.trace("getFileFromQueue returned %d", fileNum);
 
     return fileNum;
 }
