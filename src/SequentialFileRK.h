@@ -5,8 +5,6 @@
 
 #include <deque>
 
-
-
 /**
  * @brief Class for maintaining a directory of files as a queue with unique filenames
  * 
@@ -14,62 +12,13 @@
  */
 class SequentialFile {
 public:
-    /**
-     * @brief Constructor
-     * 
-     * Often you will create this object as a global variable, though you can create it
-     * with new. You normally do not allocate one as a stack variable as you want it
-     * to maintain the queue in the object for efficiency.
-     */
     SequentialFile();
-
-    /**
-     * @brief Constructor that takes a directory to use for the queue directory
-     * 
-     * This is equivalent to using the default constructor and calling withDirPath().
-     */
-    SequentialFile(const char *dirPath);
-
-    /**
-     * @brief Constructor that takes a directory to use for the queue directory and a filename extension
-     * 
-     * This is equivalent to using the default constructor and calling withDirPath() and withFilenameExtension().
-     */
-    SequentialFile(const char *dirPath, const char *ext);
-
-    /**
-     * @brief Destructor
-     */
     virtual ~SequentialFile();
 
-    /**
-     * @brief Sets the directory to use for the queue directory. Required!
-     * 
-     * @param dirPath The path to use for the queue directory. 
-     * 
-     * Typically you either put the directory in /usr to make sure it doesn't conflict with
-     * system usage. Thus you would pass in "/usr/myqueue" to use the directory "myqueue".
-     * 
-     * Note that this will only create one level of directories, so make sure you've first
-     * created the parent directory (or directories) if you are using deeper nesting.
-     * 
-     * You can pass in a directory name that ends with a slash or not. Internally it's stored
-     * with any trailing slash removed.
-     */
     SequentialFile &withDirPath(const char *dirPath);
 
-    /** 
-     * @brief Gets the directory name of the queue directory
-     * 
-     * It will not end with a / regardless of what you pass in.
-     */
     const char *getDirPath() const { return dirPath; };
 
-    /**
-     * @brief The filename to number pattern for sprintf/sscanf
-     * 
-     * The default is %08d.
-     */
     SequentialFile &withPattern(const char *pattern) { this->pattern = pattern; return *this; };
 
     const char *getPattern() const { return pattern; };
@@ -147,25 +96,14 @@ public:
      * 
      * @param allExtensions If true, all files with that number regardless of extension are removed.
      * 
-     * Passing false for allExtensions is more efficient if you are not using multiple files pere
-     * queue element because it only has to unlink the one file. If you pass true, then the directory
-     * needs to be iterated.
      */
     void removeFileNum(int fileNum, bool allExtensions);
 
     /**
-     * @brief Remove all files on disk in the queue directory
-     * 
-     * @param removeDir Also remove the queue directory itself if true.
-     * 
-     * This removes all files, including those that do not match the filename pattern,
-     * and all extensions.
+     * @brief
      */
     void removeAll(bool removeDir);
 
-    /**
-     * @brief Gets the length of the queue (number of elements in the queue)
-     */
     int getQueueLen() const;
 
     /**
@@ -199,53 +137,11 @@ public:
      */
     static String getNameWithOptionalExt(const char *name, const char *ext);
 
-    /**
-     * @brief Gets an instance of SequentialFile for dirPath, or creates one if one does not yet exist
-     * 
-     * @param dirPath The path to use for the queue directory. 
-     * 
-     * Use of this is optional, however it's a good way to manage a queue shared by two different 
-     * modules, a writer to the queue and a reader from the queue. 
-     */
-    static SequentialFile *getInstance(const char *dirPath);
-
-    /**
-     * @brief Gets an instance of SequentialFile for dirPath, or creates one if one does not yet exist
-     * 
-     * @param dirPath The path to use for the queue directory. 
-     * 
-     * @param ext The filename extension. This is not used for comparison, but is used for creating
-     * a new instance. Assumption is that a queue directory will only use one extension, if it's
-     * using an extension.
-     */
-    static SequentialFile *getInstance(const char *dirPath, const char *ext);
-
-
 protected:
-    /**
-     * @brief Can be subclassed to examine a file before adding to the queue on scanDir
-     * 
-     * @return true to add to the queue or false to ignore
-     * 
-     * This class always returns true, but you can subclass this method and examine the
-     * file to determine if you want to add it to the queue. For example, you could
-     * determine if the file is valid, and discard partially written files this way.
-     * 
-     * Use getPathForFileNum() or getNameForFileNum() to get a path to the file. It
-     * is safe to unlink() a file from this function.
-     */
-    virtual bool preScanAddHook(int fileNum) { return true; };
+    virtual bool preScanAddHook(const char *name) { return true; };
 
-    /**
-     * @brief Locks the mutex around accessing the queue
-     * 
-     * Note: The mutex is not a recursive mutex, so don't lock within a lock.
-     */
     void queueMutexLock() const;
 
-    /**
-     * @brief Unlocks the mutex around accessing the queue
-     */
     void queueMutexUnlock() const;
 
 protected:

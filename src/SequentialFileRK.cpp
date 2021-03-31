@@ -3,100 +3,17 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <vector>
+
 
 static Logger _log("app.seqfile");
 
-class SequentialFileShared {
-public:
-    static SequentialFileShared &getInstance();
-
-    void addObject(SequentialFile *obj);
-    void removeObject(SequentialFile *obj);
-
-    SequentialFile *findByPath(const char *dirPath);
-
-protected:
-    SequentialFileShared();
-    virtual ~SequentialFileShared();
-
-    std::vector<SequentialFile *>objects;
-    mutable os_mutex_t objectsMutex = 0;
-
-    static SequentialFileShared *_instance;
-};
-
-SequentialFileShared &SequentialFileShared::getInstance() {
-    if (!_instance) {
-        _instance = new SequentialFileShared();
-    }
-    return *_instance;
-}
-
-void SequentialFileShared::addObject(SequentialFile *obj) {
-    if (!objectsMutex) {
-        os_mutex_create(&objectsMutex);
-    }
-    os_mutex_lock(objectsMutex);
-    objects.push_back(obj);
-    os_mutex_unlock(objectsMutex);
-}
-
-void SequentialFileShared::removeObject(SequentialFile *obj) {
-    os_mutex_lock(objectsMutex);
-    for(auto iter = objects.begin(); iter != objects.end(); iter++) {
-        if (*iter == obj) {
-            objects.erase(iter);
-            break;
-        }
-    }
-    os_mutex_unlock(objectsMutex);
-}
-SequentialFile *SequentialFileShared::findByPath(const char *dirPath) {
-    SequentialFile *result = 0;
-
-    os_mutex_lock(objectsMutex);
-    for(auto iter = objects.begin(); iter != objects.end(); iter++) {
-        if (strcmp((*iter)->getDirPath(), dirPath) == 0) {
-            result = *iter;
-            break;
-        }
-    }
-    os_mutex_unlock(objectsMutex);
-}
-
-
-SequentialFileShared::SequentialFileShared() {
-}
-
-SequentialFileShared::~SequentialFileShared() {
-
-}
-
-
-SequentialFileShared* SequentialFileShared::_instance;
-
-
 
 SequentialFile::SequentialFile() {
-    SequentialFileShared::getInstance().addObject(this);
-}
 
-SequentialFile::SequentialFile(const char *dirPath) {
-    withDirPath(dirPath);
-    SequentialFileShared::getInstance().addObject(this);
 }
-
-SequentialFile::SequentialFile(const char *dirPath, const char *ext) {
-    withDirPath(dirPath);
-    withFilenameExtension(ext);
-    SequentialFileShared::getInstance().addObject(this);
-}
-
 
 SequentialFile::~SequentialFile() {
 
-    SequentialFileShared::getInstance().removeObject(this);
 }
 
 SequentialFile &SequentialFile::withDirPath(const char *dirPath) { 
@@ -140,28 +57,21 @@ bool SequentialFile::scanDir(void) {
         }
         
         int fileNum;
-        if (sscanf(ent->d_name, pattern, &fileNum) != 1) {
-            // Not a numeric file
-            continue;
-        }
-        if (filenameExtension.length() != 0 && !String(ent->d_name).endsWith(filenameExtension)) {
-            // Not a matching extension
-            continue;
-        }
-        // 
-        if (!preScanAddHook(fileNum)) {
-            // Pre-scan add hook returned false (do not queue file)
-            continue;
-        }
-                    
-        if (fileNum > lastFileNum) {
-            lastFileNum = fileNum;
-        }
-        _log.trace("adding to queue %d %s", fileNum, ent->d_name);
+        if (sscanf(ent->d_name, pattern, &fileNum) == 1) {
+            if (filenameExtension.length() == 0 || String(ent->d_name).endsWith(filenameExtension)) {
+                // 
+                if (preScanAddHook(ent->d_name)) {
+                    if (fileNum > lastFileNum) {
+                        lastFileNum = fileNum;
+                    }
+                    _log.trace("adding to queue %d %s", fileNum, ent->d_name);
 
-        queueMutexLock();
-        queue.push_back(fileNum); 
-        queueMutexUnlock();
+                    queueMutexLock();
+                    queue.push_back(fileNum); 
+                    queueMutexUnlock();
+                }
+            }
+        }
     }
     closedir(dir);
     
@@ -347,28 +257,6 @@ bool SequentialFile::createDirIfNecessary(const char *path) {
         return false;
     }
 }
-
-// [static]
-SequentialFile *SequentialFile::getInstance(const char *dirPath) {
-    SequentialFile *result;
-    
-    result = SequentialFileShared::getInstance().findByPath(dirPath);
-    if (!result) {
-        result = new SequentialFile(dirPath);
-    }
-}
-
-
-// [static]
-SequentialFile *SequentialFile::getInstance(const char *dirPath, const char *ext) {
-    SequentialFile *result;
-    
-    result = SequentialFileShared::getInstance().findByPath(dirPath);
-    if (!result) {
-        result = new SequentialFile(dirPath, ext);
-    }
-}
-
 
 
 // [static]
