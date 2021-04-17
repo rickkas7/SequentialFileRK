@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SmsWebhookRK: SequentialFile Class Reference</title>
+<title>ucamToFileRK: SequentialFile Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,7 +21,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">SmsWebhookRK
+   <div id="projectname">ucamToFileRK
    </div>
   </td>
  </tr>
@@ -113,9 +113,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:ad1f77c50657cd2364c85955ae6740313"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_sequential_file.html#ad1f77c50657cd2364c85955ae6740313">addFileToQueue</a> (int fileNum)</td></tr>
 <tr class="memdesc:ad1f77c50657cd2364c85955ae6740313"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a previously reserved file to the queue.  <a href="class_sequential_file.html#ad1f77c50657cd2364c85955ae6740313">More...</a><br /></td></tr>
 <tr class="separator:ad1f77c50657cd2364c85955ae6740313"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a05177f3f5f8bb6528f6d1cecc4022ff2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_sequential_file.html#a05177f3f5f8bb6528f6d1cecc4022ff2">getFileFromQueue</a> (void)</td></tr>
-<tr class="memdesc:a05177f3f5f8bb6528f6d1cecc4022ff2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a file from the queue.  <a href="class_sequential_file.html#a05177f3f5f8bb6528f6d1cecc4022ff2">More...</a><br /></td></tr>
-<tr class="separator:a05177f3f5f8bb6528f6d1cecc4022ff2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5fb651889c0e74d6ec4a4afeb112658a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_sequential_file.html#a5fb651889c0e74d6ec4a4afeb112658a">getFileFromQueue</a> (bool remove=true)</td></tr>
+<tr class="memdesc:a5fb651889c0e74d6ec4a4afeb112658a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a file from the queue.  <a href="class_sequential_file.html#a5fb651889c0e74d6ec4a4afeb112658a">More...</a><br /></td></tr>
+<tr class="separator:a5fb651889c0e74d6ec4a4afeb112658a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a16f4e1bf3ca26ba7551b8148c72e3f27"><td class="memItemLeft" align="right" valign="top">String&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_sequential_file.html#a16f4e1bf3ca26ba7551b8148c72e3f27">getNameForFileNum</a> (int fileNum, const char *overrideExt=NULL)</td></tr>
 <tr class="memdesc:a16f4e1bf3ca26ba7551b8148c72e3f27"><td class="mdescLeft">&#160;</td><td class="mdescRight">Uses pattern to create a filename given a fileNum.  <a href="class_sequential_file.html#a16f4e1bf3ca26ba7551b8148c72e3f27">More...</a><br /></td></tr>
 <tr class="separator:a16f4e1bf3ca26ba7551b8148c72e3f27"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -201,7 +201,7 @@ os_mutex_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href
 <p>Files left on disk are added to the queue during <a class="el" href="class_sequential_file.html#a8ec4eba0b7b735b9f338e21003daec81" title="Scans the queue directory for files. Typically called during setup().">scanDir()</a> and an in-memory queue is initialized with the files to process.</p>
 <p>Code can reserve a space in the queue using <a class="el" href="class_sequential_file.html#a3c08c208379127ef9913e4275c4dd032" title="Reserve a file number you will use to write data to.">reserveFile()</a>. This returns the next available file number but does not create the file.</p>
 <p>Once you have fully written the file, call <a class="el" href="class_sequential_file.html#ad1f77c50657cd2364c85955ae6740313" title="Adds a previously reserved file to the queue.">addFileToQueue()</a>.</p>
-<p>The code that processes files in the queue calls <a class="el" href="class_sequential_file.html#a05177f3f5f8bb6528f6d1cecc4022ff2" title="Gets a file from the queue.">getFileFromQueue()</a>. </p>
+<p>The code that processes files in the queue calls <a class="el" href="class_sequential_file.html#a5fb651889c0e74d6ec4a4afeb112658a" title="Gets a file from the queue.">getFileFromQueue()</a>. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="aef58d2fa4a6ef7c2bdb369199ba63db2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aef58d2fa4a6ef7c2bdb369199ba63db2">&#9670;&nbsp;</a></span>SequentialFile()</h2>
@@ -270,8 +270,8 @@ os_mutex_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href
 </div><div class="memdoc">
 
 <p>Adds a previously reserved file to the queue. </p>
-<p>Use <a class="el" href="class_sequential_file.html#a3c08c208379127ef9913e4275c4dd032" title="Reserve a file number you will use to write data to.">reserveFile()</a> to get the next file number, <a class="el" href="class_sequential_file.html#ad1f77c50657cd2364c85955ae6740313" title="Adds a previously reserved file to the queue.">addFileToQueue()</a> to add it to the queue and <a class="el" href="class_sequential_file.html#a05177f3f5f8bb6528f6d1cecc4022ff2" title="Gets a file from the queue.">getFileFromQueue()</a> to get an item from the queue.</p>
-<p>It's safe to call <a class="el" href="class_sequential_file.html#a3c08c208379127ef9913e4275c4dd032" title="Reserve a file number you will use to write data to.">reserveFile()</a>, <a class="el" href="class_sequential_file.html#ad1f77c50657cd2364c85955ae6740313" title="Adds a previously reserved file to the queue.">addFileToQueue()</a>, and <a class="el" href="class_sequential_file.html#a05177f3f5f8bb6528f6d1cecc4022ff2" title="Gets a file from the queue.">getFileFromQueue()</a> from different threads. Locking is handled internally. </p>
+<p>Use <a class="el" href="class_sequential_file.html#a3c08c208379127ef9913e4275c4dd032" title="Reserve a file number you will use to write data to.">reserveFile()</a> to get the next file number, <a class="el" href="class_sequential_file.html#ad1f77c50657cd2364c85955ae6740313" title="Adds a previously reserved file to the queue.">addFileToQueue()</a> to add it to the queue and <a class="el" href="class_sequential_file.html#a5fb651889c0e74d6ec4a4afeb112658a" title="Gets a file from the queue.">getFileFromQueue()</a> to get an item from the queue.</p>
+<p>It's safe to call <a class="el" href="class_sequential_file.html#a3c08c208379127ef9913e4275c4dd032" title="Reserve a file number you will use to write data to.">reserveFile()</a>, <a class="el" href="class_sequential_file.html#ad1f77c50657cd2364c85955ae6740313" title="Adds a previously reserved file to the queue.">addFileToQueue()</a>, and <a class="el" href="class_sequential_file.html#a5fb651889c0e74d6ec4a4afeb112658a" title="Gets a file from the queue.">getFileFromQueue()</a> from different threads. Locking is handled internally. </p>
 
 </div>
 </div>
@@ -332,8 +332,8 @@ os_mutex_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href
 
 </div>
 </div>
-<a id="a05177f3f5f8bb6528f6d1cecc4022ff2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a05177f3f5f8bb6528f6d1cecc4022ff2">&#9670;&nbsp;</a></span>getFileFromQueue()</h2>
+<a id="a5fb651889c0e74d6ec4a4afeb112658a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5fb651889c0e74d6ec4a4afeb112658a">&#9670;&nbsp;</a></span>getFileFromQueue()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -341,18 +341,24 @@ os_mutex_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href
         <tr>
           <td class="memname">int SequentialFile::getFileFromQueue </td>
           <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>remove</em> = <code>true</code></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Gets a file from the queue. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">remove</td><td>(optional, default true). If true, removes the file from the queue in RAM. If false, calling <a class="el" href="class_sequential_file.html#a5fb651889c0e74d6ec4a4afeb112658a" title="Gets a file from the queue.">getFileFromQueue()</a> again will retrieve the same fileNum.</td></tr>
+  </table>
+  </dd>
+</dl>
 <dl class="section return"><dt>Returns</dt><dd>0 if there are no items in the queue, or a fileNum for an item in the queue.</dd></dl>
 <p>Use <a class="el" href="class_sequential_file.html#ad446fe7c6c783f8eb902e0b1aab580ee" title="Gets a full pathname based on dirName and getNameForFileNum.">getPathForFileNum()</a> to convert the number into a pathname for use with open().</p>
-<p>The queue is stored in RAM, so if the device reboots before you delete the file it will reappear in the queue when scanDir is called. This method does not need to access the filesystem. You can call <a class="el" href="class_sequential_file.html#a05177f3f5f8bb6528f6d1cecc4022ff2" title="Gets a file from the queue.">getFileFromQueue()</a> on every loop if you want to to check if there are files to process without affecting performance.</p>
-<p>It's safe to call <a class="el" href="class_sequential_file.html#a3c08c208379127ef9913e4275c4dd032" title="Reserve a file number you will use to write data to.">reserveFile()</a>, <a class="el" href="class_sequential_file.html#ad1f77c50657cd2364c85955ae6740313" title="Adds a previously reserved file to the queue.">addFileToQueue()</a>, and <a class="el" href="class_sequential_file.html#a05177f3f5f8bb6528f6d1cecc4022ff2" title="Gets a file from the queue.">getFileFromQueue()</a> from different threads. Locking is handled internally. </p>
+<p>The queue is stored in RAM, so if the device reboots before you delete the file it will reappear in the queue when scanDir is called. This method does not need to access the filesystem. You can call <a class="el" href="class_sequential_file.html#a5fb651889c0e74d6ec4a4afeb112658a" title="Gets a file from the queue.">getFileFromQueue()</a> on every loop if you want to to check if there are files to process without affecting performance.</p>
+<p>It's safe to call <a class="el" href="class_sequential_file.html#a3c08c208379127ef9913e4275c4dd032" title="Reserve a file number you will use to write data to.">reserveFile()</a>, <a class="el" href="class_sequential_file.html#ad1f77c50657cd2364c85955ae6740313" title="Adds a previously reserved file to the queue.">addFileToQueue()</a>, and <a class="el" href="class_sequential_file.html#a5fb651889c0e74d6ec4a4afeb112658a" title="Gets a file from the queue.">getFileFromQueue()</a> from different threads. Locking is handled internally. </p>
 
 </div>
 </div>
@@ -413,8 +419,8 @@ os_mutex_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href
 <p>Uses pattern to create a filename given a fileNum. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">fileNum</td><td>A file number, typically from <a class="el" href="class_sequential_file.html#a3c08c208379127ef9913e4275c4dd032" title="Reserve a file number you will use to write data to.">reserveFile()</a> or <a class="el" href="class_sequential_file.html#a05177f3f5f8bb6528f6d1cecc4022ff2" title="Gets a file from the queue.">getFileFromQueue()</a></td></tr>
-    <tr><td class="paramname">overrideExt</td><td>If non-null, use this extension instead of the configured filename extension.</td></tr>
+    <tr><td class="paramname">fileNum</td><td>A file number, typically from <a class="el" href="class_sequential_file.html#a3c08c208379127ef9913e4275c4dd032" title="Reserve a file number you will use to write data to.">reserveFile()</a> or <a class="el" href="class_sequential_file.html#a5fb651889c0e74d6ec4a4afeb112658a" title="Gets a file from the queue.">getFileFromQueue()</a></td></tr>
+    <tr><td class="paramname">overrideExt</td><td>If non-null, use this extension instead of the configured filename extension. It should not contain the preceeding dot.</td></tr>
   </table>
   </dd>
 </dl>
@@ -497,7 +503,7 @@ os_mutex_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href
 <p>Gets a full pathname based on dirName and getNameForFileNum. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">fileNum</td><td>A file number, typically from <a class="el" href="class_sequential_file.html#a3c08c208379127ef9913e4275c4dd032" title="Reserve a file number you will use to write data to.">reserveFile()</a> or <a class="el" href="class_sequential_file.html#a05177f3f5f8bb6528f6d1cecc4022ff2" title="Gets a file from the queue.">getFileFromQueue()</a></td></tr>
+    <tr><td class="paramname">fileNum</td><td>A file number, typically from <a class="el" href="class_sequential_file.html#a3c08c208379127ef9913e4275c4dd032" title="Reserve a file number you will use to write data to.">reserveFile()</a> or <a class="el" href="class_sequential_file.html#a5fb651889c0e74d6ec4a4afeb112658a" title="Gets a file from the queue.">getFileFromQueue()</a></td></tr>
     <tr><td class="paramname">overrideExt</td><td>If non-null, use this extension instead of the configured filename extension.</td></tr>
   </table>
   </dd>
@@ -593,7 +599,7 @@ os_mutex_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href
 <p>Remove fileNum from the flash file system. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">fileNum</td><td>A file number, typically from <a class="el" href="class_sequential_file.html#a3c08c208379127ef9913e4275c4dd032" title="Reserve a file number you will use to write data to.">reserveFile()</a> or <a class="el" href="class_sequential_file.html#a05177f3f5f8bb6528f6d1cecc4022ff2" title="Gets a file from the queue.">getFileFromQueue()</a></td></tr>
+    <tr><td class="paramname">fileNum</td><td>A file number, typically from <a class="el" href="class_sequential_file.html#a3c08c208379127ef9913e4275c4dd032" title="Reserve a file number you will use to write data to.">reserveFile()</a> or <a class="el" href="class_sequential_file.html#a5fb651889c0e74d6ec4a4afeb112658a" title="Gets a file from the queue.">getFileFromQueue()</a></td></tr>
     <tr><td class="paramname">allExtensions</td><td>If true, all files with that number regardless of extension are removed. </td></tr>
   </table>
   </dd>
@@ -768,7 +774,7 @@ os_mutex_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href
 </div><div class="memdoc">
 
 <p>Queue of files. </p>
-<p>Items are added using <a class="el" href="class_sequential_file.html#a8ec4eba0b7b735b9f338e21003daec81" title="Scans the queue directory for files. Typically called during setup().">scanDir()</a> and <a class="el" href="class_sequential_file.html#ad1f77c50657cd2364c85955ae6740313" title="Adds a previously reserved file to the queue.">addFileToQueue()</a>. Removed using <a class="el" href="class_sequential_file.html#a05177f3f5f8bb6528f6d1cecc4022ff2" title="Gets a file from the queue.">getFileFromQueue()</a>. </p>
+<p>Items are added using <a class="el" href="class_sequential_file.html#a8ec4eba0b7b735b9f338e21003daec81" title="Scans the queue directory for files. Typically called during setup().">scanDir()</a> and <a class="el" href="class_sequential_file.html#ad1f77c50657cd2364c85955ae6740313" title="Adds a previously reserved file to the queue.">addFileToQueue()</a>. Removed using <a class="el" href="class_sequential_file.html#a5fb651889c0e74d6ec4a4afeb112658a" title="Gets a file from the queue.">getFileFromQueue()</a>. </p>
 
 </div>
 </div>

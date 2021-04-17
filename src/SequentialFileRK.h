@@ -129,6 +129,9 @@ public:
     /**
      * @brief Gets a file from the queue
      * 
+     * @param remove (optional, default true). If true, removes the file from the queue in
+     * RAM. If false, calling getFileFromQueue() again will retrieve the same fileNum.
+     * 
      * @return 0 if there are no items in the queue, or a fileNum for an item in the queue.
      * 
      * Use getPathForFileNum() to convert the number into a pathname for use with open().
@@ -142,7 +145,7 @@ public:
      * threads. Locking is handled internally.
      * 
      */
-    int getFileFromQueue(void);
+    int getFileFromQueue(bool remove = true);
 
     /**
      * @brief Uses pattern to create a filename given a fileNum
@@ -150,7 +153,7 @@ public:
      * @param fileNum A file number, typically from reserveFile() or getFileFromQueue()
      * 
      * @param overrideExt If non-null, use this extension instead of the configured
-     * filename extension.
+     * filename extension. It should not contain the preceeding dot.
      * 
      * The overrideExt is used when you create multiple files per queue entry fileNum,
      * for example a data file and a .sha1 hash for the file. Or other metadata.
@@ -185,7 +188,8 @@ public:
      * 
      * @brief removeDir true to remove the queue directory itself, false to just remove the contents.
      * 
-     * Note this is all files, not just the filenames with the matching extension.
+     * Note this is all files, not just the filenames with the matching extension. 
+     * Also removes the entries from the RAM-based queue and sets lastFileNum to 0.
      */
     void removeAll(bool removeDir);
 

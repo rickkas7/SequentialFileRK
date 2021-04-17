@@ -170,13 +170,16 @@ It's safe to call reserveFile(), addFileToQueue(), and getFileFromQueue() from d
 
 ---
 
-### int SequentialFile::getFileFromQueue(void) 
+### int SequentialFile::getFileFromQueue(bool remove) 
 
 Gets a file from the queue.
 
 ```
-int getFileFromQueue(void)
+int getFileFromQueue(bool remove)
 ```
+
+#### Parameters
+* `remove` (optional, default true). If true, removes the file from the queue in RAM. If false, calling getFileFromQueue() again will retrieve the same fileNum.
 
 #### Returns
 0 if there are no items in the queue, or a fileNum for an item in the queue.
@@ -281,6 +284,10 @@ SequentialFile & operator=(const SequentialFile &) = delete
 ```
 
 ## Version History
+
+### 0.0.2 (2021-04-17)
+
+- Added option to getFileFromQueue without removing it
 
 ### 0.0.1 (2021-04-04)
 

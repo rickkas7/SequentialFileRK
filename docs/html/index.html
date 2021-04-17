@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SmsWebhookRK: SequentialFileRK</title>
+<title>ucamToFileRK: SequentialFileRK</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,7 +21,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">SmsWebhookRK
+   <div id="projectname">ucamToFileRK
    </div>
   </td>
  </tr>
@@ -65,7 +65,147 @@ $(function() {
 <div class="title">SequentialFileRK </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Library for managing sequentially numbered files on the flash file system on Particle Gen 3 devices </p>
+<div class="textblock"><p>Library for managing sequentially numbered files on the flash file system on Particle Gen 3 devices</p>
+<h1>class <a class="el" href="class_sequential_file.html" title="Class for maintaining a directory of files as a queue with unique filenames.">SequentialFile</a></h1>
+<p>Class for maintaining a directory of files as a queue with unique filenames.</p>
+<p>You select a directory on the Gen 3 flash file system for use as the queue directory. This directory is filled with numbered files, for example: 00000001.jpg. It's possible to store meta information in additional files. For example, 00000001.sha1 to hold a SHA-1 hash of the file. The file are numbered sequentially.</p>
+<p>You typically instantiate this class as a global variable.</p>
+<p>In global setup(), configure it using the withXXX() methods, then call the scanDir() method to read the queue from disk. In particular, you must use withDirPath() to set the queue directory!</p>
+<p>Files left on disk are added to the queue during scanDir() and an in-memory queue is initialized with the files to process.</p>
+<p>Code can reserve a space in the queue using reserveFile(). This returns the next available file number but does not create the file.</p>
+<p>Once you have fully written the file, call addFileToQueue().</p>
+<p>The code that processes files in the queue calls getFileFromQueue().</p>
+<h2>Members</h2>
+<hr  />
+<h3><a class="el" href="class_sequential_file.html#aef58d2fa4a6ef7c2bdb369199ba63db2" title="Default constructor.">SequentialFile::SequentialFile()</a></h3>
+<p>Default constructor.</p>
+<div class="fragment"><div class="line">SequentialFile()</div>
+</div><!-- fragment --><p>This object is often created as a global variable.</p>
+<p>In global setup(), configure it using the withXXX() methods, then call the scanDir() method to read the queue from disk.</p>
+<hr  />
+<h3><a class="el" href="class_sequential_file.html#a49b1e5ab96a07ee5ccdeadf90bad9606" title="Destructor.">SequentialFile::~SequentialFile()</a></h3>
+<p>Destructor.</p>
+<div class="fragment"><div class="line">virtual  ~SequentialFile()</div>
+</div><!-- fragment --><p>This object is often created as a global variables and never deleted.</p>
+<hr  />
+<h3><a class="el" href="class_sequential_file.html" title="Class for maintaining a directory of files as a queue with unique filenames.">SequentialFile</a> &amp; <a class="el" href="class_sequential_file.html#a78904483c9d5e57a108b950fc59e19b3" title="Sets the directory to use as the queue directory. This is required!">SequentialFile::withDirPath(const char * dirPath)</a></h3>
+<p>Sets the directory to use as the queue directory. This is required!</p>
+<div class="fragment"><div class="line">SequentialFile &amp; withDirPath(const char * dirPath)</div>
+</div><!-- fragment --><h4>Parameters</h4>
+<ul>
+<li><code>dirPath</code> the pathname, Unix-style with / as the directory separator.</li>
+</ul>
+<p>Typically you create your queue either at the top level ("/myqueue") or in /usr ("/usr/myqueue"). The directory will be created if necessary, however only one level of directory will be created. The parent must already exist.</p>
+<p>The dirPath can end with a slash or not, but if you include it, it will be removed.</p>
+<p>You must call this as you cannot use the root directory as a queue!</p>
+<hr  />
+<h3>const char * <a class="el" href="class_sequential_file.html#a31d347554fe824ba04172b428291457c" title="Gets the directory path set using withDirPath()">SequentialFile::getDirPath() const</a></h3>
+<p>Gets the directory path set using withDirPath()</p>
+<div class="fragment"><div class="line">const char * getDirPath() const</div>
+</div><!-- fragment --><p>The returned path will not end with a slash.</p>
+<hr  />
+<h3><a class="el" href="class_sequential_file.html" title="Class for maintaining a directory of files as a queue with unique filenames.">SequentialFile</a> &amp; <a class="el" href="class_sequential_file.html#a2d4901b560f696247adf9e482c4409f0" title="Sets the filename pattern. Default is %08d (8-digit decimal number with leading zeros)">SequentialFile::withPattern(const char * pattern)</a></h3>
+<p>Sets the filename pattern. Default is %08d (8-digit decimal number with leading zeros)</p>
+<div class="fragment"><div class="line">SequentialFile &amp; withPattern(const char * pattern)</div>
+</div><!-- fragment --><h4>Parameters</h4>
+<ul>
+<li><code>pattern</code> The sprintf/sscanf pattern to use</li>
+</ul>
+<p>This string is used when scanning the queue directory to find files. Do not include the filename extension in this pattern!</p>
+<hr  />
+<h3>const char * <a class="el" href="class_sequential_file.html#a1295358ac1806e9c320481589ae32b31" title="Gets the filename pattern.">SequentialFile::getPattern() const</a></h3>
+<p>Gets the filename pattern.</p>
+<div class="fragment"><div class="line">const char * getPattern() const</div>
+</div><!-- fragment --><hr  />
+<h3><a class="el" href="class_sequential_file.html" title="Class for maintaining a directory of files as a queue with unique filenames.">SequentialFile</a> &amp; <a class="el" href="class_sequential_file.html#a73a5cf479e0fbd460362350289919d7a" title="Filename extension for queue files. (Default: no extension)">SequentialFile::withFilenameExtension(const char * ext)</a></h3>
+<p>Filename extension for queue files. (Default: no extension)</p>
+<div class="fragment"><div class="line">SequentialFile &amp; withFilenameExtension(const char * ext)</div>
+</div><!-- fragment --><h4>Parameters</h4>
+<ul>
+<li><code>ext</code> The filename extension (just the extension, no preceding dot)</li>
+</ul>
+<p>For example, for JPEG files it might be "jpg".</p>
+<hr  />
+<h3>const char * <a class="el" href="class_sequential_file.html#a8f9d8ef1772bef6f2bf71dbf77669eec" title="Gets the filename extension.">SequentialFile::getFilenameExtension() const</a></h3>
+<p>Gets the filename extension.</p>
+<div class="fragment"><div class="line">const char * getFilenameExtension() const</div>
+</div><!-- fragment --><p>Returned string does not contain the dot. For example, for JPEG files it might be "jpg".</p>
+<hr  />
+<h3>bool <a class="el" href="class_sequential_file.html#a8ec4eba0b7b735b9f338e21003daec81" title="Scans the queue directory for files. Typically called during setup().">SequentialFile::scanDir(void)</a></h3>
+<p>Scans the queue directory for files. Typically called during setup().</p>
+<div class="fragment"><div class="line">bool scanDir(void)</div>
+</div><!-- fragment --><hr  />
+<h3>int <a class="el" href="class_sequential_file.html#a3c08c208379127ef9913e4275c4dd032" title="Reserve a file number you will use to write data to.">SequentialFile::reserveFile(void)</a></h3>
+<p>Reserve a file number you will use to write data to.</p>
+<div class="fragment"><div class="line">int reserveFile(void)</div>
+</div><!-- fragment --><p>Use getPathForFileNum() to get the pathname to the file. Reservations are in-RAM only so if the device reboots before you write the file, the reservation will be lost.</p>
+<hr  />
+<h3>void <a class="el" href="class_sequential_file.html#ad1f77c50657cd2364c85955ae6740313" title="Adds a previously reserved file to the queue.">SequentialFile::addFileToQueue(int fileNum)</a></h3>
+<p>Adds a previously reserved file to the queue.</p>
+<div class="fragment"><div class="line">void addFileToQueue(int fileNum)</div>
+</div><!-- fragment --><p>Use reserveFile() to get the next file number, addFileToQueue() to add it to the queue and getFileFromQueue() to get an item from the queue.</p>
+<p>It's safe to call reserveFile(), addFileToQueue(), and getFileFromQueue() from different threads. Locking is handled internally.</p>
+<hr  />
+<h3>int SequentialFile::getFileFromQueue(void)</h3>
+<p>Gets a file from the queue.</p>
+<div class="fragment"><div class="line">int getFileFromQueue(void)</div>
+</div><!-- fragment --><h4>Returns</h4>
+<p>0 if there are no items in the queue, or a fileNum for an item in the queue.</p>
+<p>Use getPathForFileNum() to convert the number into a pathname for use with open().</p>
+<p>The queue is stored in RAM, so if the device reboots before you delete the file it will reappear in the queue when scanDir is called. This method does not need to access the filesystem. You can call getFileFromQueue() on every loop if you want to to check if there are files to process without affecting performance.</p>
+<p>It's safe to call reserveFile(), addFileToQueue(), and getFileFromQueue() from different threads. Locking is handled internally.</p>
+<hr  />
+<h3>String <a class="el" href="class_sequential_file.html#a16f4e1bf3ca26ba7551b8148c72e3f27" title="Uses pattern to create a filename given a fileNum.">SequentialFile::getNameForFileNum(int fileNum, const char * overrideExt)</a></h3>
+<p>Uses pattern to create a filename given a fileNum.</p>
+<div class="fragment"><div class="line">String getNameForFileNum(int fileNum, const char * overrideExt)</div>
+</div><!-- fragment --><h4>Parameters</h4>
+<ul>
+<li><code>fileNum</code> A file number, typically from reserveFile() or getFileFromQueue()</li>
+<li><code>overrideExt</code> If non-null, use this extension instead of the configured filename extension.</li>
+</ul>
+<p>The overrideExt is used when you create multiple files per queue entry fileNum, for example a data file and a .sha1 hash for the file. Or other metadata.</p>
+<hr  />
+<h3>String <a class="el" href="class_sequential_file.html#ad446fe7c6c783f8eb902e0b1aab580ee" title="Gets a full pathname based on dirName and getNameForFileNum.">SequentialFile::getPathForFileNum(int fileNum, const char * overrideExt)</a></h3>
+<p>Gets a full pathname based on dirName and getNameForFileNum.</p>
+<div class="fragment"><div class="line">String getPathForFileNum(int fileNum, const char * overrideExt)</div>
+</div><!-- fragment --><h4>Parameters</h4>
+<ul>
+<li><code>fileNum</code> A file number, typically from reserveFile() or getFileFromQueue()</li>
+<li><code>overrideExt</code> If non-null, use this extension instead of the configured filename extension.</li>
+</ul>
+<p>The overrideExt is used when you create multiple files per queue entry fileNum, for example a data file and a .sha1 hash for the file. Or other metadata.</p>
+<hr  />
+<h3>void <a class="el" href="class_sequential_file.html#ab598f45bbd35dda3af14be5a5be7671a" title="Remove fileNum from the flash file system.">SequentialFile::removeFileNum(int fileNum, bool allExtensions)</a></h3>
+<p>Remove fileNum from the flash file system.</p>
+<div class="fragment"><div class="line">void removeFileNum(int fileNum, bool allExtensions)</div>
+</div><!-- fragment --><h4>Parameters</h4>
+<ul>
+<li><code>fileNum</code> A file number, typically from reserveFile() or getFileFromQueue()</li>
+<li><code>allExtensions</code> If true, all files with that number regardless of extension are removed.</li>
+</ul>
+<hr  />
+<h3>void <a class="el" href="class_sequential_file.html#a6628953887d8e3f20c485fe5b789c9d6" title="Removes all of the files in the queue directory.">SequentialFile::removeAll(bool removeDir)</a></h3>
+<p>Removes all of the files in the queue directory.</p>
+<div class="fragment"><div class="line">void removeAll(bool removeDir)</div>
+</div><!-- fragment --><p>removeDir true to remove the queue directory itself, false to just remove the contents.</p>
+<p>Note this is all files, not just the filenames with the matching extension.</p>
+<hr  />
+<h3>int <a class="el" href="class_sequential_file.html#ab03533e1ce2267c04a5e586af2d36e17" title="Gets the length of the queue.">SequentialFile::getQueueLen() const</a></h3>
+<p>Gets the length of the queue.</p>
+<div class="fragment"><div class="line">int getQueueLen() const</div>
+</div><!-- fragment --><hr  />
+<h3><a class="el" href="class_sequential_file.html#a45c961f42143d5c99f8f69985311ce05" title="This class is not copyable.">SequentialFile::SequentialFile(const SequentialFile &amp;)</a></h3>
+<p>This class is not copyable.</p>
+<div class="fragment"><div class="line">SequentialFile(const SequentialFile &amp;) = delete</div>
+</div><!-- fragment --><hr  />
+<h3><a class="el" href="class_sequential_file.html" title="Class for maintaining a directory of files as a queue with unique filenames.">SequentialFile</a> &amp; <a class="el" href="class_sequential_file.html#a4f4e0ed7ea3ccda89a631edbfbbfb557" title="This class is not copyable.">SequentialFile::operator=(const SequentialFile &amp;)</a></h3>
+<p>This class is not copyable.</p>
+<div class="fragment"><div class="line">SequentialFile &amp; operator=(const SequentialFile &amp;) = delete</div>
+</div><!-- fragment --><h2>Version History</h2>
+<h3>0.0.1 (2021-04-04)</h3>
+<ul>
+<li>Initial version </li>
+</ul>
 </div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->

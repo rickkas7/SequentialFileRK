@@ -100,7 +100,7 @@ void SequentialFile::addFileToQueue(int fileNum) {
     queueMutexUnlock();
 }
  
-int SequentialFile::getFileFromQueue(void) {
+int SequentialFile::getFileFromQueue(bool remove) {
     int fileNum = 0;
 
     if (!scanDirCompleted) {
@@ -110,14 +110,19 @@ int SequentialFile::getFileFromQueue(void) {
     queueMutexLock();
     if (!queue.empty()) {
         fileNum = queue.front();
-        queue.pop_front();
+        if (remove) {
+            queue.pop_front();
+        }
     }
     queueMutexUnlock();
 
-    _log.trace("getFileFromQueue returned %d", fileNum);
+    if (fileNum != 0) {
+        _log.trace("getFileFromQueue returned %d", fileNum);
+    }
 
     return fileNum;
 }
+
 
 String SequentialFile::getNameForFileNum(int fileNum, const char *overrideExt) {
     String name = String::format(pattern.c_str(), fileNum);
@@ -192,13 +197,16 @@ void SequentialFile::removeAll(bool removeDir) {
         closedir(dir);
     }    
     queueMutexLock();
-    queue.clear();
-    queueMutexUnlock();
 
+    queue.clear();
 
     if (removeDir) {
         rmdir(dirPath);
     }
+    lastFileNum = 0;
+    scanDirCompleted = false;
+
+    queueMutexUnlock();
 }
 
 int SequentialFile::getQueueLen() const {
