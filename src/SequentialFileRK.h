@@ -147,6 +147,16 @@ public:
      */
     int getFileFromQueue(bool remove = true);
 
+
+    /**
+     * @brief Get the fileNum of the second file in the queue
+     * 
+     * @return 0 if there are no items in the queue, or a fileNum for an item in the queue.
+     * 
+     * Use getPathForFileNum() to convert the number into a pathname for use with open().
+     */
+    int removeSecondFileInQueue();
+
     /**
      * @brief Uses pattern to create a filename given a fileNum
      * 

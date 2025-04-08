@@ -123,6 +123,30 @@ int SequentialFile::getFileFromQueue(bool remove) {
     return fileNum;
 }
 
+int SequentialFile::removeSecondFileInQueue() {
+    int fileNum = 0;
+
+    if (!scanDirCompleted) {
+        scanDir();
+    }
+
+    queueMutexLock();
+    auto iter = queue.begin();
+    if (iter != queue.end()) {
+        if (++iter != queue.end()) {
+            fileNum = *iter;
+            queue.erase(iter);
+        }
+    }
+    queueMutexUnlock();
+
+    if (fileNum != 0) {
+        _log.trace("removeSecondFileInQueue returned %d", fileNum);
+    }
+
+    return fileNum;
+}
+
 
 String SequentialFile::getNameForFileNum(int fileNum, const char *overrideExt) {
     String name = String::format(pattern.c_str(), fileNum);

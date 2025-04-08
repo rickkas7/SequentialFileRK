@@ -190,6 +190,23 @@ The queue is stored in RAM, so if the device reboots before you delete the file 
 
 It's safe to call reserveFile(), addFileToQueue(), and getFileFromQueue() from different threads. Locking is handled internally.
 
+
+---
+
+### int SequentialFile::removeSecondFileInQueue();
+
+Get the fileNum of the second file in the queue
+
+```
+int SequentialFile::removeSecondFileInQueue();
+```
+
+#### Returns
+
+0 if there are no items in the queue, or a fileNum for an item in the queue.
+
+Use getPathForFileNum() to convert the number into a pathname for use with open().
+
 ---
 
 ### String SequentialFile::getNameForFileNum(int fileNum, const char * overrideExt) 
@@ -284,6 +301,11 @@ SequentialFile & operator=(const SequentialFile &) = delete
 ```
 
 ## Version History
+
+### 0.0.3 (2025-04-08)
+
+- Added removeSecondFileInQueue
+- Added particle.ignore
 
 ### 0.0.2 (2021-04-17)
 
