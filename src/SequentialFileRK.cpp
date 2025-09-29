@@ -7,6 +7,55 @@
 
 static Logger _log("app.seqfile");
 
+namespace {
+
+// FIXME: MAX_PATH in libc is 4096, which is wrong
+const size_t MAX_PATH_LEN = 255;
+
+using ProcessCb = std::function<int(const char*, int)>;
+
+// Workaround for https://github.com/littlefs-project/littlefs/commit/a5d614fbfbf19b8605e08c28a53bc69ea3179a3e
+int findLeafEntry(char* pathBuf, size_t bufSize, size_t pathLen, bool* found = nullptr, ProcessCb process = ProcessCb()) {
+    DIR* dir = opendir(pathBuf);
+    CHECK_TRUE(dir, SYSTEM_ERROR_FILESYSTEM);
+    NAMED_SCOPE_GUARD(closeDirGuard, {
+        int r = closedir(dir);
+        if (r < 0) {
+            LOG(ERROR, "Failed to close directory handle: %d", errno);
+        }
+    });
+
+    dirent* ent = nullptr;
+    while ((ent = readdir(dir)) != nullptr) {
+        if (ent->d_type == DT_DIR && (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0)) {
+            continue;
+        }
+        pathBuf[pathLen++] = '/'; // May overwrite the term. null
+        size_t n = strlcpy(pathBuf + pathLen, ent->d_name, bufSize - pathLen);
+        if (n >= bufSize - pathLen) {
+            return SYSTEM_ERROR_PATH_TOO_LONG;
+        }
+        closeDirGuard.dismiss();
+        CHECK_TRUE(closedir(dir) == 0, SYSTEM_ERROR_FILESYSTEM);
+        if (ent->d_type == DT_DIR) {
+            CHECK(findLeafEntry(pathBuf, bufSize, pathLen + n));
+        }
+        if (!process) {
+            break;
+        } else {
+            if (process(pathBuf, ent->d_type) < 0) {
+                break;
+            }
+        }
+    }
+    CHECK_TRUE(ent, SYSTEM_ERROR_NOT_FOUND);
+    if (found) {
+        *found = (bool)ent;
+    }
+    return 0;
+}
+} // anonymous
+
 
 SequentialFile::SequentialFile() {
 
@@ -164,36 +213,27 @@ String SequentialFile::getPathForFileNum(int fileNum, const char *overrideExt) {
     return result;
 }
 
-
 void SequentialFile::removeFileNum(int fileNum, bool allExtensions) {
     if (allExtensions) {
-        DIR *dir = opendir(dirPath);
-        if (dir) {
-            while(true) {
-                struct dirent* ent = readdir(dir); 
-                if (!ent) {
-                    break;
-                }
-                
-                if (ent->d_type != DT_REG) {
-                    // Not a plain file
-                    continue;
-                }
-                
+        char pathBuf[MAX_PATH_LEN + 1] = {};
+        size_t pathLen = strlcpy(pathBuf, dirPath.c_str(), sizeof(pathBuf));
+        if (pathLen >= sizeof(pathBuf)) {
+            _log.trace("path %s over MAX_PATH_LEN", dirPath.c_str());
+            return;
+        }
+        findLeafEntry(pathBuf, sizeof(pathBuf), pathLen, nullptr, [fileNum, this](const char* path, int type) {
+            if (type == DT_REG) {
                 int curFileNum;
-                if (sscanf(ent->d_name, pattern.c_str(), &curFileNum) == 1) {
+                if (sscanf(basename(path), pattern.c_str(), &curFileNum) == 1) {
                     if (curFileNum == fileNum) {
-                        // dirPath never ends with a "/" because withDirName() removes it if it was passed in
-                        String path = dirPath + String("/") + ent->d_name;
                         unlink(path);
-                        _log.trace("removed %s", path.c_str());
+                        _log.trace("removed %s", path);
                     }
                 }
             }
-            closedir(dir);
-        }
-    }
-    else {
+            return 0;
+        });
+    } else {
         String path = getPathForFileNum(fileNum); 
         unlink(path);
         _log.trace("removed %s", path.c_str());
@@ -201,25 +241,24 @@ void SequentialFile::removeFileNum(int fileNum, bool allExtensions) {
 }
 
 void SequentialFile::removeAll(bool removeDir) {
-    DIR *dir = opendir(dirPath);
-    if (dir) {
-        while(true) {
-            struct dirent* ent = readdir(dir); 
-            if (!ent) {
-                break;
-            }
-            
-            if (ent->d_type != DT_REG) {
-                // Not a plain file
-                continue;
-            }
-            
-            String path = dirPath + String("/") + ent->d_name;
-            unlink(path);
-            _log.trace("removed %s", path.c_str());
+    char pathBuf[MAX_PATH_LEN + 1] = {};
+    size_t pathLen = strlcpy(pathBuf, dirPath.c_str(), sizeof(pathBuf));
+    if (pathLen >= sizeof(pathBuf)) {
+        _log.trace("path %s over MAX_PATH_LEN", dirPath.c_str());
+        return;
+    }
+    for (;;) {
+        bool found = false;
+        findLeafEntry(pathBuf, sizeof(pathBuf), pathLen, &found);
+        if (!found) {
+            break;
         }
-        closedir(dir);
-    }    
+        int r = unlink(pathBuf);
+        if (r < 0) {
+            _log.trace("failed to remove %s: %d", pathBuf, errno);
+        }
+        pathBuf[pathLen] = '\0'; // Reset to the base path
+    }
     queueMutexLock();
 
     queue.clear();
