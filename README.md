@@ -302,6 +302,10 @@ SequentialFile & operator=(const SequentialFile &) = delete
 
 ## Version History
 
+### 0.0.4 (2025-09-29)
+
+- Incorporated a workaround for a LittleFS bug that can cause file system corruption when unlinking a file with open file handles to a parent directory.
+
 ### 0.0.3 (2025-04-08)
 
 - Added removeSecondFileInQueue
