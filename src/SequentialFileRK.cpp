@@ -4,6 +4,9 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
+#include <utility>
+#include <vector>
+
 
 static Logger _log("app.seqfile");
 
@@ -16,6 +19,9 @@ using ProcessCb = std::function<int(const char*, int)>;
 
 // Workaround for https://github.com/littlefs-project/littlefs/commit/a5d614fbfbf19b8605e08c28a53bc69ea3179a3e
 int findLeafEntry(char* pathBuf, size_t bufSize, size_t pathLen, bool* found = nullptr, ProcessCb process = ProcessCb()) {
+    // The directory is closed before any entry is acted on, and nothing read from it is used
+    // after closedir() (which frees the dirent). With a callback, the entries are listed while
+    // the directory is open and processed after it is closed.
     DIR* dir = opendir(pathBuf);
     CHECK_TRUE(dir, SYSTEM_ERROR_FILESYSTEM);
     NAMED_SCOPE_GUARD(closeDirGuard, {
@@ -25,32 +31,49 @@ int findLeafEntry(char* pathBuf, size_t bufSize, size_t pathLen, bool* found = n
         }
     });
 
+    std::vector<std::pair<String, int>> entries; // with a callback: name and type of each entry
+    bool any = false;
+    bool isDir = false;
     dirent* ent = nullptr;
     while ((ent = readdir(dir)) != nullptr) {
         if (ent->d_type == DT_DIR && (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0)) {
             continue;
         }
-        pathBuf[pathLen++] = '/'; // May overwrite the term. null
-        size_t n = strlcpy(pathBuf + pathLen, ent->d_name, bufSize - pathLen);
-        if (n >= bufSize - pathLen) {
+        any = true;
+        if (process) {
+            entries.push_back(std::make_pair(String(ent->d_name), (int)ent->d_type));
+            continue;
+        }
+        isDir = (ent->d_type == DT_DIR);
+        pathBuf[pathLen] = '/'; // May overwrite the term. null
+        size_t n = strlcpy(pathBuf + pathLen + 1, ent->d_name, bufSize - pathLen - 1);
+        if (n >= bufSize - pathLen - 1) {
             return SYSTEM_ERROR_PATH_TOO_LONG;
         }
-        closeDirGuard.dismiss();
-        CHECK_TRUE(closedir(dir) == 0, SYSTEM_ERROR_FILESYSTEM);
-        if (ent->d_type == DT_DIR) {
-            CHECK(findLeafEntry(pathBuf, bufSize, pathLen + n));
-        }
-        if (!process) {
-            break;
-        } else {
-            if (process(pathBuf, ent->d_type) < 0) {
+        pathLen += 1 + n;
+        break;
+    }
+    closeDirGuard.dismiss();
+    CHECK_TRUE(closedir(dir) == 0, SYSTEM_ERROR_FILESYSTEM);
+    CHECK_TRUE(any, SYSTEM_ERROR_NOT_FOUND);
+
+    if (process) {
+        for (const auto& e : entries) {
+            pathBuf[pathLen] = '/';
+            size_t n = strlcpy(pathBuf + pathLen + 1, e.first.c_str(), bufSize - pathLen - 1);
+            if (n >= bufSize - pathLen - 1) {
+                return SYSTEM_ERROR_PATH_TOO_LONG;
+            }
+            if (process(pathBuf, e.second) < 0) {
                 break;
             }
         }
+        pathBuf[pathLen] = '\0';
+    } else if (isDir) {
+        CHECK(findLeafEntry(pathBuf, bufSize, pathLen));
     }
-    CHECK_TRUE(ent, SYSTEM_ERROR_NOT_FOUND);
     if (found) {
-        *found = (bool)ent;
+        *found = true;
     }
     return 0;
 }
